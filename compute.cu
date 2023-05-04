@@ -13,7 +13,7 @@ __global__ void compute_Pairwise_Accelerations(vector3* hPos, double* mass, vect
 
 	if (i < numEntities && j < numEntities) {
 		if (i == j) {
-			FILL_VECTOR(accels[i][j], 0, 0, 0);
+			FILL_VECTOR(accels[i * numEntities + j][j], 0, 0, 0);
 		} else {
 			vector3 distance;
 			for (k=0; k < 3; k++) {
@@ -22,7 +22,7 @@ __global__ void compute_Pairwise_Accelerations(vector3* hPos, double* mass, vect
 			double magnitude_sq = distance[0] * distance[0] + distance[1] * distance[1] + distance[2] * distance[2];
 			double magnitude = sqrt(magnitude_sq);
 			double accelmag = -1 * GRAV_CONSTANT * mass[j] / magnitude_sq;
-			FILL_VECTOR(accels[i][j], accelmag*distance[0] / magnitude, accelmag*distance[1] / magnitude, accelmag * distance[2] / magnitude);
+			FILL_VECTOR(accels[i * numEntities + j][j], accelmag * distance[0] / magnitude, accelmag * distance[1] / magnitude, accelmag * distance[2] / magnitude);
 		}
 	} 
 }
