@@ -7,8 +7,20 @@
 //first compute the pairwise accelerations.  Effect is on the first argument.
 __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vector3 *accels, int numEntities) {
 
+	__shared__ double share_mass[16];
+	__shared__ vector3 share_hPos[16];
+
 	int i = blockIdx.y * blockDim.y + threadIdx.y;
 	int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < numEntities && threadIdx.x == 0) {
+		share_mass[threadIdx.y] = mass[i];
+		share_hPos[threadIdx.y][0] = hPos[i][0];
+		share_hPos[threadIdx.y][1] = hPos[i][1];
+		share_hPos[threadIdx.y][2] = hPos[i][2];
+	}
+
+	__syncthreads();s
 
 	if (i < numEntities && j < numEntities) {
 		if (i == j) {
