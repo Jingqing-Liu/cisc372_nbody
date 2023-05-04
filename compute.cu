@@ -35,16 +35,16 @@ __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVe
 
 	if (i < numEntities) {
 		vector3 accel_sum={0, 0, 0};
-		for (j = 0; j < NUMENTITIES; j++){
+		for (j = 0; j < numEntities; j++){
 			for (k = 0;k < 3; k++)
-				accel_sum[k] += accels[i][j][k];
+				accel_sum[k] += accels[i * numEntities + j][k];
 		}
 	}
 	//compute the new velocity based on the acceleration and time interval
 	//compute the new position based on the velocity and time interval
 	for (k = 0; k < 3; k++){
-		hVel[i][k] += accel_sum[k] * INTERVAL;
-		hPos[i][k] = hVel[i][k] * INTERVAL;
+		hVel[i][k] += accel_sum[k] * interval;
+		hPos[i][k] = hVel[i][k] * interval;
 	}
 }
 
