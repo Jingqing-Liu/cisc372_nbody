@@ -36,8 +36,9 @@ __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVe
 	if (i < numEntities) {
 		vector3 accel_sum={0, 0, 0};
 		for (j = 0; j < numEntities; j++){
-			for (k = 0;k < 3; k++)
+			for (k = 0;k < 3; k++) {
 				accel_sum[k] += accels[i * numEntities + j][k];
+			}
 		}
 	}
 	//compute the new velocity based on the acceleration and time interval
@@ -54,14 +55,33 @@ __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVe
 //Returns: None
 //Side Effect: Modifies the hPos and hVel arrays with the new positions and accelerations after 1 INTERVAL
 void compute(){
-	//make an acceleration matrix which is NUMENTITIES squared in size;
-	int i,j,k;
-	vector3* values=(vector3*)malloc(sizeof(vector3)*NUMENTITIES*NUMENTITIES);
-	vector3** accels=(vector3**)malloc(sizeof(vector3*)*NUMENTITIES);
-	for (i=0;i<NUMENTITIES;i++)
-		accels[i]=&values[i*NUMENTITIES];
 
-	
-	free(accels);
-	free(values);
+	vector3* device_hPos, device_hVel, device_accels;
+	double* device_mass;
+
+	cudaMalloc((void**)&device_hPos, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_hVel, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_mass, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_accels, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+
+	cudaMemcpy(device_hPos, hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_hVel, hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_mass, mass, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+
+	dim3 blockDim(16, 16);
+	dim3 gridDim(NUMENTITIES + blockDim.x - 1) / blockDim.x, (NUMENTITIES + blockDim.y - 1) / blockDim.y;
+
+	compute_Pairwise_Accelerations <<< gridDim, vlockDim >> (device_hPos, device_mass, device_accels, NUMENTITIES);
+
+	cudaDeviceSynchronize();
+
+	sum_and_update_velocity_and_position <<< gridDim.x, vlockDim.x >> (device_hPos, device_hVel, device_accels, NUMENTITIES, INTERVAL);
+
+	cudaMemcpy(hPos, device_hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
+	cudaMemcpy(hVel, device_hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
+
+	free(device_hPos);
+	free(device_hVel);
+	free(device_accels);
+	free(device_mass);
 }
