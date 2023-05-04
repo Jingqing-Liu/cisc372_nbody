@@ -20,7 +20,7 @@ __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vect
 		share_hPos[threadIdx.y][2] = hPos[i][2];
 	}
 
-	__syncthreads();s
+	__syncthreads();
 
 	if (i < numEntities && j < numEntities) {
 		if (i == j) {
@@ -39,24 +39,34 @@ __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vect
 }
 
 //sum up the rows of our matrix to get effect on each entity, then update velocity and position.
-__global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVel, vector3* accels, int numEntities, double interval) {
+__global__ void update_velocity_and_position(vector3* hPos, vector3* hVel, vector3* accels, int numEntities, double interval) {
 
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (i < numEntities) {
-		vector3 accel_sum={0, 0, 0};
-		for (int j = 0; j < numEntities; j++){
-			for (int k = 0;k < 3; k++) {
-				accel_sum[k] += accels[i * numEntities + j][k];
-			}
-		}
-
 	//compute the new velocity based on the acceleration and time interval
 	//compute the new position based on the velocity and time interval
 		for (int k = 0; k < 3; k++){
 			hVel[i][k] += accel_sum[k] * interval;
 			hPos[i][k] = hVel[i][k] * interval;
 		}
+	}
+}
+
+__global__ void sum(vector3* accels, vector3* sum_accels, int numEntities) {
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < numEntities) {
+		vector3 sum={0, 0, 0};
+		for (int j = 0; j < numEntities; j++){
+			for (int k = 0;k < 3; k++) {
+				accel_sum[k] += accels[i * numEntities + j][k];
+			}
+		}
+		sun_accels[i][0] = sum[0];
+		sun_accels[i][1] = sum[1];
+		sun_accels[i][2] = sum[2];
 	}
 }
 
