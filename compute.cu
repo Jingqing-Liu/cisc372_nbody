@@ -63,6 +63,18 @@ __global__ void sum(vector3* accels, vector3* accel_sum, int numEntities) {
 	}
 }
 
+__global__ void update_velocity_and_position(vector3* hPos, vector3* hVel, vector3* accel_sum, int numEntities) {
+
+	int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (i < numEntities) {
+		for (int k = 0; k < 3; k++){
+			hVel[i][k] += accel_sum[i][k] * INTERVAL;
+			hPos[i][k] = hVel[i][k] * INTERVAL;
+		}
+	}
+}
+
 //compute: Updates the positions and locations of the objects in the system based on gravity.
 //Parameters: None
 //Returns: None
