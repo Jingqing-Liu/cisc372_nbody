@@ -102,7 +102,7 @@ void compute(){
 
 	cudaDeviceSynchronize();
 
-	sum_and_update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accels, NUMENTITIES);
+//	sum_and_update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accels, NUMENTITIES);
 
 	sum<<<gridDim.x, blockDim.x>>>(device_accels, device_accel_sum, NUMENTITIES);
 	update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accel_sum, NUMENTITIES);
