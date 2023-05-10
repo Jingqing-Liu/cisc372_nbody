@@ -114,5 +114,5 @@ void compute(){
 	cudaFree(device_hVel);
 	cudaFree(device_mass);
 	cudaFree(device_accels);
-	cudaFree(devidevice_accel_sumce_accels);
+	cudaFree(device_accel_sum);
 }
