@@ -26,7 +26,7 @@ __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vect
 	} 
 }
 
-sum up the rows of our matrix to get effect on each entity, then update velocity and position.
+// sum up the rows of our matrix to get effect on each entity, then update velocity and position.
 __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVel, vector3* accels, int numEntities) {
 
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -99,6 +99,43 @@ void compute(){
 	compute_Pairwise_Accelerations<<<gridDim, blockDim>>>(device_hPos, device_mass, device_accels);
 	cudaDeviceSynchronize();
 	
+	sum_and_update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accels, NUMENTITIES);
+
+	// sum<<<gridDim.x, blockDim.x>>>(device_accels, device_accel_sum, NUMENTITIES);
+	// update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accel_sum, NUMENTITIES);
+
+	cudaMemcpy(hPos, device_hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
+	cudaMemcpy(hVel, device_hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
+
+	cudaFree(device_hPos);
+	cudaFree(device_hVel);
+	cudaFree(device_mass);
+	cudaFree(device_accels);
+}
+
+void compute(){
+
+	vector3 *device_hPos, *device_hVel, *device_accels;
+	double *device_mass;
+//	vector3 *device_accel_sum;
+
+	cudaMalloc((void**)&device_hPos, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_hVel, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_mass, sizeof(double)*NUMENTITIES);
+	cudaMalloc((void**)&device_accels, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+//	cudaMalloc((void**)&device_accel_sum, sizeof(vector3)*NUMENTITIES);
+
+	cudaMemcpy(device_hPos, hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_hVel, hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_mass, mass, sizeof(double)*NUMENTITIES, cudaMemcpyHostToDevice);
+
+	dim3 blockDim(16, 16);
+	dim3 gridDim((NUMENTITIES + blockDim.x - 1) / blockDim.x, (NUMENTITIES + blockDim.y - 1) / blockDim.y);
+
+	compute_Pairwise_Accelerations<<<gridDim, blockDim>>>(device_hPos, device_mass, device_accels);
+
+	cudaDeviceSynchronize();
+
 	sum_and_update_velocity_and_position<<<gridDim.x, blockDim.x>>>(device_hPos, device_hVel, device_accels, NUMENTITIES);
 
 	// sum<<<gridDim.x, blockDim.x>>>(device_accels, device_accel_sum, NUMENTITIES);
