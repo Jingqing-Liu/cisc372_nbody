@@ -6,6 +6,7 @@
 #include "config.h"
 #include "planets.h"
 #include "compute.h"
+#include <cuda_runtime.h>
 
 // represents the objects in the system.  Global variables
 vector3 *hVel, *d_hVel;
@@ -102,9 +103,22 @@ int main(int argc, char **argv)
 	#ifdef DEBUG
 	printSystem(stdout);
 	#endif
+
+	cudaMalloc((void**)&device_hPos, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_hVel, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&device_mass, sizeof(double)*NUMENTITIES);
+	cudaMalloc((void**)&device_accels, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+
+
 	for (t_now=0;t_now<DURATION;t_now+=INTERVAL){
 		compute();
 	}
+
+	cudaFree(device_hPos);
+	cudaFree(device_hVel);
+	cudaFree(device_mass);
+	cudaFree(device_accels);
+
 	clock_t t1=clock()-t0;
 #ifdef DEBUG
 	printSystem(stdout);
