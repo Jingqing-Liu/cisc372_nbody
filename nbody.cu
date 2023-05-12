@@ -1,3 +1,11 @@
+/*
+
+Project: CISC372_nbody
+Team: Jingqing Liu, Zhiwen Zhu
+
+*/
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>

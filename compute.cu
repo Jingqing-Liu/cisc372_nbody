@@ -1,3 +1,11 @@
+/*
+
+Project: CISC372_nbody
+Team: Jingqing Liu, Zhiwen Zhu
+
+*/
+
+
 #include <stdlib.h>
 #include <math.h>
 #include "vector.h"
