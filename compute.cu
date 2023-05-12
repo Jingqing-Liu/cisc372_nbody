@@ -3,6 +3,9 @@
 #include "vector.h"
 #include "config.h"
 #include <cuda_runtime.h>
+
+vector3 *device_hPos, *device_hVel, *device_accels;
+double *device_mass;
 	
 //first compute the pairwise accelerations.  Effect is on the first argument.
 __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vector3 *accels) {
@@ -79,16 +82,16 @@ __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVe
 //Returns: None
 //Side Effect: Modifies the hPos and hVel arrays with the new positions and accelerations after 1 INTERVAL
 
+
+
 void compute(){
 
-	vector3 *device_hPos, *device_hVel, *device_accels;
-	double *device_mass;
 	// vector3 *device_accel_sum;
 
-	cudaMalloc((void**)&device_hPos, sizeof(vector3)*NUMENTITIES);
-	cudaMalloc((void**)&device_hVel, sizeof(vector3)*NUMENTITIES);
-	cudaMalloc((void**)&device_mass, sizeof(double)*NUMENTITIES);
-	cudaMalloc((void**)&device_accels, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
+	// cudaMalloc((void**)&device_hPos, sizeof(vector3)*NUMENTITIES);
+	// cudaMalloc((void**)&device_hVel, sizeof(vector3)*NUMENTITIES);
+	// cudaMalloc((void**)&device_mass, sizeof(double)*NUMENTITIES);
+	// cudaMalloc((void**)&device_accels, sizeof(vector3)*NUMENTITIES*NUMENTITIES);
 	//cudaMalloc((void**)&device_accel_sum, sizeof(vector3)*NUMENTITIES);
 
 	cudaMemcpy(device_hPos, hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
@@ -110,9 +113,9 @@ void compute(){
 	cudaMemcpy(hPos, device_hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
 	cudaMemcpy(hVel, device_hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
 
-	cudaFree(device_hPos);
-	cudaFree(device_hVel);
-	cudaFree(device_mass);
-	cudaFree(device_accels);
+	// cudaFree(device_hPos);
+	// cudaFree(device_hVel);
+	// cudaFree(device_mass);
+	// cudaFree(device_accels);
 	// cudaFree(device_accel_sum);
 }
