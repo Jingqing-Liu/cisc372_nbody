@@ -37,6 +37,8 @@ __global__ void compute_Pairwise_Accelerations(vector3 *hPos, double *mass, vect
 	} 
 }
 
+// Without separating sum and update, it is a relatively fast
+
 // sum up the rows of our matrix to get effect on each entity, then update velocity and position.
 __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVel, vector3* accels, int numEntities) {
 
@@ -58,6 +60,8 @@ __global__ void sum_and_update_velocity_and_position(vector3* hPos, vector3* hVe
 		}
 	}
 }
+
+// Separating sum and update is a relatively slow
 
 // __global__ void sum(vector3* accels, vector3* accel_sum, int numEntities) {
 
